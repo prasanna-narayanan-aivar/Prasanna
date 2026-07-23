@@ -19,7 +19,7 @@ forwarding.
 ## Goal
 
 ```bash
-curl http://localhost
+curl http://localhost/health
 ```
 
 returns:
@@ -165,7 +165,7 @@ server {
         limit_req zone=app_limit burst=5 nodelay;
         limit_req_status 429;
 
-        proxy_pass http://flaskbackend/health;
+        proxy_pass http://flaskbackend;
 
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -195,17 +195,18 @@ sudo systemctl status nginx
 ### 1. Basic checkpoint
 
 ```bash
-curl http://localhost
+curl http://localhost/health
 # expect: {"status": "ok", "db": "reachable"}
 ```
 
 ### 2. Prove rate limiting is real
 
 ```bash
-for i in {1..10}; do curl -i -s http://192.168.64.2 | grep "HTTP/"; done
+for i in {1..10}; do curl -i -s http://192.168.64.2/health | grep "HTTP/"; done
 ```
 
 Expected
+```bash
 HTTP/1.1 200 OK
 HTTP/1.1 200 OK
 HTTP/1.1 200 OK
@@ -216,6 +217,8 @@ HTTP/1.1 429 Too Many Requests
 HTTP/1.1 429 Too Many Requests
 HTTP/1.1 429 Too Many Requests
 HTTP/1.1 429 Too Many Requests
+```
+
 ### 3. Prove Tier 3 isolation
 
 ```bash
